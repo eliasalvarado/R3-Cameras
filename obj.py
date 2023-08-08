@@ -1,0 +1,44 @@
+
+
+class Obj(object):
+    def __init__(self, filename):
+        with open(filename, "r") as file:
+            self.lines = file.read().splitlines()
+
+        self.vertices = []
+        self.texCoords = []
+        self.normals = []
+        self.faces = []
+
+        for line in self.lines:
+            try:
+                prefix, value = line.split(" ", 1)
+                value = value.lstrip(" ").rstrip(" ")
+            except:
+                continue
+                
+            if prefix == "v":
+                self.vertices.append(list(map(float, value.split(" "))))
+            elif prefix == "vt":
+                self.texCoords.append(list(map(float, value.split(" "))))
+            elif prefix == "vn":
+                self.normals.append(list(map(float, value.split(" "))))
+            elif prefix == "f":
+                #self.faces.append([list(map(int, vert.split("/"))) for vert in value.split(" ")])
+                verts = value.split(" ")
+                try:
+                    if (len(verts) == 3):
+                        self.faces.append([list(map(int, vert.split("/"))) for vert in verts])
+                    elif len(verts) == 4:
+                        tri1 = [list(map(int, verts[0].split("/"))),
+                                list(map(int, verts[1].split("/"))),
+                                list(map(int, verts[2].split("/")))]
+                        tri2 = [list(map(int, verts[0].split("/"))),
+                                list(map(int, verts[2].split("/"))),
+                                list(map(int, verts[3].split("/")))]
+                        self.faces.append(tri1)
+                        self.faces.append(tri2)
+                except:
+                    print(verts)
+
+    
