@@ -11,9 +11,9 @@ def vertexShader(vertex, **kwargs):
         vertex[2], 
         1]
 
-    """ temp1 = multMM(vpMatrix, projectionMatrix)
-    temp2 = multMM(temp1, viewMatrix)
-    matrix = multMM(temp2, modelMatrix) """
+    temp1 = multMM([vpMatrix, projectionMatrix])
+    temp2 = multMM([temp1, viewMatrix])
+    matrix = multMM([temp2, modelMatrix])
 
     """ vt = multMV(modelMatrix, vt)
     vt = multMV(viewMatrix, vt)
@@ -24,7 +24,7 @@ def vertexShader(vertex, **kwargs):
     vt = multMV(viewMatrix, vt)
     vt = multMV(modelMatrix, vt) """
 
-    matrix = multMM([vpMatrix, projectionMatrix, viewMatrix, modelMatrix])
+    #matrix = multMM([vpMatrix, projectionMatrix, viewMatrix, modelMatrix])
     
     vt = multMV(matrix, vt)
 

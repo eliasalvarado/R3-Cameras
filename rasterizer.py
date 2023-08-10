@@ -9,15 +9,72 @@ rend = Renderer(width, height)
 rend.vertexShader = shaders.vertexShader
 rend.fragmentShader = shaders.fragmentShader
 
-scaleDim = 10
+scaleDim = 400
 
-rend.glLoadModel(filename = "model.obj",
-                texName = "model.bmp",
-                translate=(width/2, height/2, 10),
-                rotate=(0, 0, 0),
+#Medium shot
+rend.glLoadModel(filename = "table.obj",
+                texName = "tabletex.bmp",
+                translate=(0, 0, -500),
+                rotate=(0.3, 0, 0),
                 scale=(scaleDim, scaleDim, scaleDim))
 
+rend.glLookAt(camPos=(0, 50, 0),
+                eyePos=(0, 0, -500))
 
 rend.glRender()
 
-rend.glFinish("output.bmp")
+rend.glFinish("mediumshot.bmp")
+
+rend.glClearColor(0, 0, 0)
+rend.glClear()
+rend.objects = []
+
+#Low angle
+rend.glLoadModel(filename = "table.obj",
+                texName = "tabletex.bmp",
+                translate=(0, 0, -500),
+                rotate=(0.3, 0, 0),
+                scale=(scaleDim, scaleDim, scaleDim))
+
+rend.glLookAt(camPos=(0, -100, 0),
+                eyePos=(0, 150, -100))
+
+rend.glRender()
+
+rend.glFinish("lowangle.bmp")
+
+rend.glClearColor(0, 0, 0)
+rend.glClear()
+rend.objects = []
+
+#High angle
+rend.glLoadModel(filename = "table.obj",
+                texName = "tabletex.bmp",
+                translate=(0, 0, -500),
+                rotate=(0.3, 0, 0),
+                scale=(scaleDim, scaleDim, scaleDim))
+
+rend.glLookAt(camPos=(0, 200, 0),
+                eyePos=(0, -220, -100))
+
+rend.glRender()
+
+rend.glFinish("highangle.bmp")
+
+rend.glClearColor(0, 0, 0)
+rend.glClear()
+rend.objects = []
+
+#Dutch angle
+rend.glLoadModel(filename = "table.obj",
+                texName = "tabletex.bmp",
+                translate=(0, 0, -500),
+                rotate=(0.3, 0, 0.1),
+                scale=(scaleDim, scaleDim, scaleDim))
+
+rend.glLookAt(camPos=(0, 50, 0),
+                eyePos=(-20, 0, -500))
+
+rend.glRender()
+
+rend.glFinish("dutchangle.bmp")

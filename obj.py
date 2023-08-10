@@ -18,14 +18,19 @@ class Obj(object):
                 continue
                 
             if prefix == "v":
-                self.vertices.append(list(map(float, value.split(" "))))
+                #self.vertices.append(list(map(float, value.split(" "))))
+                self.vertices.append(list(map(float, filter(lambda x: x != '', value.split(" ")))))
             elif prefix == "vt":
                 self.texCoords.append(list(map(float, value.split(" "))))
             elif prefix == "vn":
                 self.normals.append(list(map(float, value.split(" "))))
             elif prefix == "f":
-                #self.faces.append([list(map(int, vert.split("/"))) for vert in value.split(" ")])
-                verts = value.split(" ")
+                try:
+                    self.faces.append([list(map(int, vert.split("/"))) for vert in value.split(" ")])
+                
+                except ValueError:
+                    self.faces.append([list(map(lambda x: int(x) if x else 0, vert.split("/"))) for vert in value.split(" ")])
+                """ verts = value.split(" ")
                 try:
                     if (len(verts) == 3):
                         self.faces.append([list(map(int, vert.split("/"))) for vert in verts])
@@ -39,6 +44,6 @@ class Obj(object):
                         self.faces.append(tri1)
                         self.faces.append(tri2)
                 except:
-                    print(verts)
+                    print(verts) """
 
     

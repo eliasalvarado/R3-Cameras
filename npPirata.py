@@ -1,6 +1,4 @@
-from math import isclose
-
-import numpy as np
+from math import isclose, sqrt
 
 def multMM(matrices):
     resultado = matrices[0]
@@ -18,8 +16,6 @@ def multMM(matrices):
                     temp_resultado[i][j] += resultado[i][k] * m2[k][j]
 
         resultado = temp_resultado
-
-    return resultado
 
     return resultado
 
@@ -58,42 +54,73 @@ def bcCoords(A, B, C, P):
         return None
 
 def invertMatrix(matrix):
-    """ a, b, c, d = matrix[0]
-    e, f, g, h = matrix[1]
-    i, j, k, l = matrix[2]
-    m, n, o, p = matrix[3]
+    if len(matrix) != len(matrix[0]):
+        raise ValueError("La matrix debe ser cuadrada para tener una inversa.")
 
-    det = a * (f * (k * p - l * o) - g * (j * p - l * n) + h * (j * o - k * n)) - \
-          b * (e * (k * p - l * o) - g * (i * p - l * m) + h * (i * o - k * m)) + \
-          c * (e * (j * p - l * n) - f * (i * p - l * m) + h * (i * n - j * m)) - \
-          d * (e * (j * o - k * n) - f * (i * o - k * m) + g * (i * n - j * m))
+    n = len(matrix)
+    identidad = [[1 if i == j else 0 for j in range(n)] for i in range(n)]
     
-    if det == 0:
-        return -1
-    else:
-        inversa = [
-            [(f * (k * p - l * o) - g * (j * p - l * n) + h * (j * o - k * n)) / det,
-             -(b * (k * p - l * o) - c * (j * p - l * n) + d * (j * o - k * n)) / det,
-             (b * (f * p - h * o) - c * (e * p - g * o) + d * (e * o - f * n)) / det,
-             -(b * (f * l - h * k) - c * (e * l - g * j) + d * (e * k - f * j)) / det],
+    for col in range(n):
+        diagonal = matrix[col][col]
+        if diagonal == 0:
+            raise ValueError("La matrix no tiene inversa.")
 
-            [-(e * (k * p - l * o) - g * (i * p - l * m) + h * (i * o - k * m)) / det,
-             (a * (k * p - l * o) - c * (i * p - l * m) + d * (i * o - k * m)) / det,
-             -(a * (f * p - h * o) - c * (e * p - g * o) + d * (e * o - f * m)) / det,
-             (a * (f * l - h * k) - c * (e * l - g * i) + d * (e * k - f * i)) / det],
+        for j in range(n):
+            matrix[col][j] /= diagonal
+            identidad[col][j] /= diagonal
+        
+        for i in range(n):
+            if i == col:
+                continue
+            
+            factor = matrix[i][col]
+            for j in range(n):
+                matrix[i][j] -= factor * matrix[col][j]
+                identidad[i][j] -= factor * identidad[col][j]
 
-            [(e * (j * p - l * n) - f * (i * p - l * m) + h * (i * n - j * m)) / det,
-             -(a * (j * p - l * n) - b * (i * p - l * m) + d * (i * n - j * m)) / det,
-             (a * (f * p - h * n) - b * (e * p - g * n) + d * (e * h - f * m)) / det,
-             -(a * (f * l - h * j) - b * (e * l - g * i) + d * (e * h - f * i)) / det],
+    return identidad
 
-            [-(e * (j * o - k * n) - f * (i * o - k * m) + g * (i * n - j * m)) / det,
-             (a * (j * o - k * n) - b * (i * o - k * m) + c * (i * n - j * m)) / det,
-             -(a * (f * o - g * n) - b * (e * o - g * m) + c * (e * n - f * m)) / det,
-             (a * (f * k - g * j) - b * (e * k - g * i) + c * (e * j - f * i)) / det]
-        ]
-        return inversa """
-    return np.linalg.inv(matrix)
+def subtractVectors(vectores):
+    if len(vectores) < 2:
+        raise ValueError("Se requieren al menos dos vectores para realizar la resta.")
+
+    longitud = len(vectores[0])
+    
+    for v in vectores:
+        if len(v) != longitud:
+            raise ValueError("Los vectores deben tener la misma longitud para realizar la resta.")
+
+    resultado = [0] * longitud
+    
+    for i in range(longitud):
+        for v in vectores:
+            resultado[i] -= v[i]
+
+    return resultado
+
+def normVector(vector):
+    magnitud = sqrt(sum(x ** 2 for x in vector))
+    
+    if magnitud == 0:
+        raise ValueError("No se puede normalizar un vector nulo.")
+    
+    vector_normalizado = [x / magnitud for x in vector]
+    
+    return vector_normalizado
+
+def cross(v1, v2):
+    resultado = [0, 0, 0]
+    
+    resultado[0] = v1[1] * v2[2] - v1[2] * v2[1]
+    resultado[1] = v1[2] * v2[0] - v1[0] * v2[2]
+    resultado[2] = v1[0] * v2[1] - v1[1] * v2[0]
+    
+    return resultado
+
 
 #prueba = [[1, 1, 0, 0], [0, -1, -2, 0], [0, 0, 1, -1], [0, 0, 0, 1]]
 #print(invertMatrix(prueba))
+
+#x = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 0, 1, 2], [3, 4, 5, 6]]
+#y = [[9, 8, 7, 6], [5, 4, 3, 2], [1, 0, 9, 8], [7, 6, 5, 4]]
+#print(multMM([x, y, y, x]))

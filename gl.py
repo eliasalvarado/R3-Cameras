@@ -2,7 +2,7 @@ from struct import pack
 from collections import namedtuple
 from math import pi, cos, sin, tan
 from obj import Obj
-from npPirata import multMM, bcCoords, invertMatrix
+from npPirata import multMM, bcCoords, invertMatrix, subtractVectors, normVector, cross
 from texture import Texture
 
 V2 = namedtuple('Point1', ['x', 'y'])
@@ -47,7 +47,7 @@ class Renderer(object):
         self.width = width
         self.height = height
 
-        self.glClearColor(1, 1, 1)
+        self.glClearColor(0, 0, 0)
         self.glClear()
 
         self.glColor(1, 1, 1)
@@ -187,6 +187,7 @@ class Renderer(object):
 
 
     def glTriangleBC(self, A, B, C, vta, vtb, vtc):
+
         minX = round(min(A[0], B[0], C[0]))
         minY = round(min(A[1], B[1], C[1]))
         maxX = round(max(A[0], B[0], C[0]))
@@ -194,9 +195,28 @@ class Renderer(object):
 
         for x in range(minX, maxX + 1):
             for y in range(minY, maxY + 1):
-                P = [x, y]
+                if (0 <= x < self.width) and (0 <= y < self.height):
+                    P = [x, y]
 
-                try:
+                    bCoords = bcCoords(A, B, C, P)
+                    
+                    if (bCoords != None):
+                        u, v, w = bCoords
+
+                        z = u * A[2] + v * B[2] + w * C[2]
+
+                        if(z < self.zBuffer[x][y]):
+                            self.zBuffer[x][y] = z
+
+                            uvs = [u * vta[0] + v * vtb[0] + w * vtc[0],
+                                u * vta[1] + v * vtb[1] + w * vtc[1]]
+                            
+                            if (self.fragmentShader != None):
+                                colorP = self.fragmentShader(texCoords = uvs, texture = self.activeTexture)
+                                self.glPoint(x, y, color(colorP[0], colorP[1], colorP[2]))
+                            else:
+                                self.glPoint(x, y, self.currColor)
+                """ try:
                     u, v, w = bcCoords(A, B, C, P)
 
                     z = u * A[2] + v * B[2] + w * C[2]
@@ -214,29 +234,7 @@ class Renderer(object):
                         else:
                             self.glPoint(x, y, self.currColor)
                 except:
-                    pass
-
-                """ bCoords = bcCoords(A, B, C, P)
-                
-                if (bCoords != None):
-                    u, v, w = bCoords
-
-                    z = u * A[2] + v * B[2] + w * C[2]
-
-                    if(z < self.zBuffer[x][y]):
-                        self.zBuffer[x][y] = z
-
-                        uvs = [u * vta[0] + v * vtb[0] + w * vtc[0],
-                                u * vta[1] + v * vtb[1] + w * vtc[1],
-                                u * vta[2] + v * vtb[2] + w * vtc[2]]
-                        uvs = [u * vta[0] + v * vtb[0] + w * vtc[0],
-                                u * vta[1] + v * vtb[1] + w * vtc[1]]
-                        
-                        if (self.fragmentShader != None):
-                            colorP = self.fragmentShader(texCoords = uvs, texture = self.activeTexture)
-                            self.glPoint(x, y, color(colorP[0], colorP[1], colorP[2]))
-                        else:
-                            self.glPoint(x, y, self.currColor) """
+                    pass """
 
 
     def glAddVertices(self, verts):
@@ -347,7 +345,26 @@ class Renderer(object):
 
 
     def glCamMatrix(self, translate = (0, 0, 0), rotation = (0, 0, 0)):
-        self.camMatrix = self.glModelMatrix(translate = translate, rotation = rotation)
+        self.camMatrix = self.glModelMatrix(translate, rotation)
+
+        self.viewMatrix = invertMatrix(self.camMatrix)
+
+    def glLookAt(self, camPos = (0, 0, 0), eyePos = (0, 0, 0)):
+        forward = subtractVectors([camPos, eyePos])
+        forward = normVector(forward)
+
+        wordUp = (0, 1, 0)
+
+        right = cross(wordUp, forward)
+        right = normVector(right)
+
+        up = cross(forward, right)
+        up = normVector(up)
+
+        self.camMatrix = [[right[0], up[0], forward[0], camPos[0]],
+                            [right[1], up[1], forward[1], camPos[1]],
+                            [right[2], up[2], forward[2], camPos[2]],
+                            [0, 0, 0, 1]]
 
         self.viewMatrix = invertMatrix(self.camMatrix)
 
@@ -367,7 +384,7 @@ class Renderer(object):
     def glProjectionMatrix(self, fov = 60, n = 0.1, f = 1000):
         aspectRatio = self.vpWidth / self.vpHeight
 
-        t = tan((fov * pi / 180) / 2) * n
+        t = tan(((fov * pi) / 180) / 2) * n
         r = t * aspectRatio
 
         self.projectionMatrix = [[n / r, 0, 0, 0],
